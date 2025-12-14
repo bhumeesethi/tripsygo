@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tripsygo | Modern Travel Stays</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    const hotels = [
+      {
+        id: 1,
+        name: "Azure Bay Resort",
+        city: "Santorini, Greece",
+        price: 189,
+        rating: 4.8,
+        reviews: 1240,
+        badge: "Breakfast included",
+        distance: "0.4 km from center",
+        type: "Resort",
+        amenities: ["Pool", "Spa", "WiFi", "Breakfast"],
+        image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=900&q=80",
+        gallery: [
+          "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80"
+        ],
+        rooms: [
+          { name: "Sea View Deluxe", price: 219, perks: ["Free cancellation", "Pay later"] },
+          { name: "Sunset Suite", price: 259, perks: ["Breakfast", "Late checkout"] }
+        ]
+      },
+      {
+        id: 2,
+        name: "Harborline Hotel",
+        city: "Copenhagen, Denmark",
+        price: 149,
+        rating: 4.6,
+        reviews: 980,
+        badge: "Free cancellation",
+        distance: "0.9 km from center",
+        type: "Hotel",
+        amenities: ["WiFi", "Breakfast", "Parking"],
+        image: "https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=900&q=80",
+        gallery: [
+          "https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80"
+        ],
+        rooms: [
+          { name: "Standard King", price: 149, perks: ["Free cancellation"] },
+          { name: "Executive", price: 189, perks: ["Breakfast", "High floor"] }
+        ]
+      },
+      {
+        id: 3,
+        name: "Skyline Suites",
+        city: "Singapore",
+        price: 209,
+        rating: 4.9,
+        reviews: 1675,
+        badge: "Top pick",
+        distance: "0.2 km from center",
+        type: "Apartment",
+        amenities: ["Pool", "Gym", "WiFi"],
+        image: "skyline.jpg",
+        gallery: [
+          "skyline.jpg",
+          "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=900&q=80"
+        ],
+        rooms: [
+          { name: "Studio", price: 209, perks: ["Kitchenette", "Free WiFi"] },
+          { name: "Two-Bedroom", price: 259, perks: ["City view", "Late checkout"] }
+        ]
+      },
+      {
+        id: 4,
+        name: "Coastline Villas",
+        city: "Maui, Hawaii",
+        price: 289,
+        rating: 4.7,
+        reviews: 860,
+        badge: "New",
+        distance: "Beachfront",
+        type: "Villa",
+        amenities: ["Pool", "Spa", "WiFi", "Parking"],
+        image: "https://images.unsplash.com/photo-1505245208761-ba872912fac0?auto=format&fit=crop&w=900&q=80",
+        gallery: [
+          "https://images.unsplash.com/photo-1505245208761-ba872912fac0?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=900&q=80"
+        ],
+        rooms: [
+          { name: "Garden Villa", price: 289, perks: ["Breakfast", "Free cancellation"] },
+          { name: "Oceanfront Villa", price: 349, perks: ["Private pool", "Breakfast"] }
+        ]
+      }
+    ];
+
+    const reviews = [
+      { name: "Priya M.", tag: "Weekend traveler", text: "Fast, familiar flow with clear pricing and flexible options.", score: 9.2, image: "https://i.pravatar.cc/150?img=47" },
+      { name: "Daniel S.", tag: "Frequent flyer", text: "Feels like Booking.com but branded for Tripsygo. Smooth filters.", score: 9.5, image: "https://i.pravatar.cc/150?img=12" },
+      { name: "Elena R.", tag: "Remote professional", text: "Loved the map + filters combo. Booking form was frictionless.", score: 9.0, image: "https://i.pravatar.cc/150?img=33" },
+      { name: "Michael K.", tag: "Business traveler", text: "Excellent user experience. Found the perfect stay in minutes.", score: 9.3, image: "https://i.pravatar.cc/150?img=68" },
+      { name: "Sarah L.", tag: "Family vacationer", text: "Great filters and easy booking process. Highly recommend!", score: 9.4, image: "https://i.pravatar.cc/150?img=45" },
+      { name: "James T.", tag: "Adventure seeker", text: "Love the map feature! Makes choosing location so much easier.", score: 9.1, image: "https://i.pravatar.cc/150?img=52" }
+    ];
+
+    const StarRating = ({ score }) => {
+      const rating = score / 2; // Convert 10-point scale to 5-star scale
+      const roundedRating = Math.round(rating * 2) / 2; // Round to nearest 0.5
+      const fullStars = Math.floor(roundedRating);
+      const hasHalfStar = roundedRating % 1 === 0.5;
+      const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+      
+      return (
+        <div className="star-rating">
+          {Array.from({ length: fullStars }).map((_, i) => (
+            <span key={`full-${i}`} className="star star--full">★</span>
+          ))}
+          {hasHalfStar && <span className="star star--half">★</span>}
+          {Array.from({ length: emptyStars }).map((_, i) => (
+            <span key={`empty-${i}`} className="star star--empty">★</span>
+          ))}
+          <span className="rating-value">{score}</span>
+        </div>
+      );
+    };
+
+    const filtersDefault = {
+      price: "any",
+      rating: "any",
+      type: "any",
+      amenities: []
+    };
+
+    const Hero = ({ onSearch }) => {
+      const [form, setForm] = useState({ where: "Santorini", checkin: "", checkout: "", guests: 2 });
+      const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+      return (
+        <section className="hero">
+          <div className="container hero__grid">
+            <div className="hero__copy">
+              <p className="eyebrow">Tripsygo • Travel stays, your way</p>
+              <h1>Find stays that feel like yours.</h1>
+              <p className="lede">A Booking.com-inspired experience with a bright, trustworthy UI and conversion-ready flow.</p>
+              <div className="hero__badges">
+                <span>Instant confirmation</span>
+                <span>Free cancellation options</span>
+                <span>24/7 partner support</span>
+              </div>
+            </div>
+            <div className="search-card">
+              <div className="tabs" role="tablist">
+                <button type="button" className="tab active">Stays</button>
+                <button type="button" className="tab ghost">Flights</button>
+                <button type="button" className="tab ghost">Experiences</button>
+              </div>
+              <label className="field">
+                <span>Where</span>
+                <input name="where" value={form.where} onChange={handleChange} placeholder="City, hotel, landmark" />
+              </label>
+              <div className="field field--inline">
+                <label>
+                  <span>Check-in</span>
+                  <input type="date" name="checkin" value={form.checkin} onChange={handleChange} />
+                </label>
+                <label>
+                  <span>Check-out</span>
+                  <input type="date" name="checkout" value={form.checkout} onChange={handleChange} />
+                </label>
+              </div>
+              <label className="field">
+                <span>Guests</span>
+                <input type="number" min="1" name="guests" value={form.guests} onChange={handleChange} />
+              </label>
+              <button className="btn primary full" onClick={() => onSearch(form)}>Search deals</button>
+              <p className="hint">Built for affiliate approvals with clear rates and policies.</p>
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    const Filters = ({ filters, setFilters }) => {
+      const toggleAmenity = (amenity) => {
+        const has = filters.amenities.includes(amenity);
+        setFilters({
+          ...filters,
+          amenities: has ? filters.amenities.filter(a => a !== amenity) : [...filters.amenities, amenity]
+        });
+      };
+      return (
+        <aside className="filters card">
+          <div className="filters__header">
+            <h3>Filters</h3>
+            <button className="link" onClick={() => setFilters(filtersDefault)}>Reset</button>
+          </div>
+          <label className="field">
+            <span>Price</span>
+            <select value={filters.price} onChange={e => setFilters({ ...filters, price: e.target.value })}>
+              <option value="any">Any</option>
+              <option value="150">$150 & below</option>
+              <option value="200">$200 & below</option>
+              <option value="300">$300 & below</option>
+            </select>
+          </label>
+          <label className="field">
+            <span>Rating</span>
+            <select value={filters.rating} onChange={e => setFilters({ ...filters, rating: e.target.value })}>
+              <option value="any">Any</option>
+              <option value="4.5">4.5+</option>
+              <option value="4.7">4.7+</option>
+              <option value="4.9">4.9</option>
+            </select>
+          </label>
+          <label className="field">
+            <span>Property</span>
+            <select value={filters.type} onChange={e => setFilters({ ...filters, type: e.target.value })}>
+              <option value="any">Any</option>
+              <option value="Hotel">Hotel</option>
+              <option value="Resort">Resort</option>
+              <option value="Apartment">Apartment</option>
+              <option value="Villa">Villa</option>
+            </select>
+          </label>
+          <div className="field">
+            <span>Amenities</span>
+            <div className="chips">
+              {["Pool", "Spa", "WiFi", "Breakfast", "Parking", "Gym"].map(a => (
+                <button
+                  key={a}
+                  className={`chip ${filters.amenities.includes(a) ? "chip--active" : ""}`}
+                  onClick={() => toggleAmenity(a)}
+                >
+                  {a}
+                </button>
+              ))}
+            </div>
+          </div>
+        </aside>
+      );
+    };
+
+    const HotelCard = ({ hotel, onSelect }) => (
+      <article className="card hotel" onClick={() => onSelect(hotel)}>
+        <img src={hotel.image} alt={hotel.name} className="hotel__img" loading="lazy" />
+        <div className="hotel__body">
+          <div className="hotel__top">
+            <div>
+              <h3>{hotel.name}</h3>
+              <p className="muted">{hotel.city} • {hotel.distance}</p>
+              <div className="hotel__tags">
+                <span className="pill pill--soft">{hotel.badge}</span>
+                <span className="pill pill--outline">{hotel.type}</span>
+              </div>
+            </div>
+            <div className="hotel__rating">
+              <strong>{hotel.rating}</strong>
+              <span>{hotel.reviews} reviews</span>
+            </div>
+          </div>
+          <div className="hotel__meta">
+            <div className="hotel__amenities">
+              {hotel.amenities.slice(0,4).map(a => <span key={a}>{a}</span>)}
+            </div>
+            <div className="hotel__price">
+              <span>From</span>
+              <strong>${hotel.price}</strong>
+              <span className="muted">/night</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    );
+
+    const HotelDetail = ({ hotel, onClose }) => {
+      if (!hotel) return null;
+      return (
+        <div className="detail card">
+          <div className="detail__header">
+            <div>
+              <p className="eyebrow">Property</p>
+              <h2>{hotel.name}</h2>
+              <p className="muted">{hotel.city} • {hotel.distance}</p>
+            </div>
+            <button className="btn ghost" onClick={onClose}>Close</button>
+          </div>
+          <div className="detail__gallery">
+            {hotel.gallery.map((src, i) => (
+              <img key={i} src={src} alt={`${hotel.name} ${i}`} loading="lazy" />
+            ))}
+          </div>
+          <div className="detail__rooms">
+            {hotel.rooms.map((room, i) => (
+              <div key={i} className="room">
+                <div>
+                  <strong>{room.name}</strong>
+                  <p className="muted">{room.perks.join(" • ")}</p>
+                </div>
+                <div className="hotel__price">
+                  <span>From</span>
+                  <strong>${room.price}</strong>
+                  <span className="muted">/night</span>
+                </div>
+                <button className="btn primary">Book this room</button>
+              </div>
+            ))}
+          </div>
+          <div className="detail__form">
+            <h4>Quick booking</h4>
+            <div className="field-grid">
+              <label className="field"><span>Name</span><input placeholder="Guest name" /></label>
+              <label className="field"><span>Email</span><input placeholder="Email address" /></label>
+              <label className="field"><span>Check-in</span><input type="date" /></label>
+              <label className="field"><span>Check-out</span><input type="date" /></label>
+            </div>
+            <button className="btn primary full">Confirm request</button>
+          </div>
+        </div>
+      );
+    };
+
+    const MapSection = () => (
+      <section className="section map" id="map">
+        <div className="container section__header">
+          <div>
+            <p className="eyebrow">Map</p>
+            <h2>Stay close to what matters</h2>
+            <p className="lede">Interactive view to choose neighborhoods quickly, inspired by Booking.com map UX.</p>
+          </div>
+          <button className="btn ghost">Open full map</button>
+        </div>
+        <div className="container map__frame">
+          <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1400&q=80" alt="Interactive map view" />
+          <div className="map__overlay">
+            <span className="pill pill--map">📍 Live pins</span>
+            <span className="pill pill--map">💰 Price heatmap</span>
+          </div>
+        </div>
+      </section>
+    );
+
+    const Reviews = () => (
+      <section className="section" id="reviews">
+        <div className="container section__header">
+          <div>
+            <p className="eyebrow">Social proof</p>
+            <h2>Guests love the flow</h2>
+            <p className="lede">Clear pricing, filters, and a familiar Booking-style UI.</p>
+          </div>
+        </div>
+        <div className="container cards cards--row">
+          {reviews.map((r, i) => (
+            <article key={i} className="card testimonial">
+              <p>{r.text}</p>
+              <div className="testimonial__meta">
+                <img src={r.image} alt={r.name} className="testimonial__avatar" />
+                <div>
+                  <strong>{r.name}</strong>
+                  <span className="muted">{r.tag}</span>
+                </div>
+              </div>
+              <StarRating score={r.score} />
+            </article>
+          ))}
+        </div>
+      </section>
+    );
+
+    const CTA = () => (
+      <section className="section section--panel">
+        <div className="container panel">
+          <div>
+            <p className="eyebrow">Affiliate-ready</p>
+            <h2>Connect Tripsygo with Booking.com</h2>
+            <ul className="checklist">
+              <li>Conversion-first layout modeled after Booking.com</li>
+              <li>Clear filters, maps, and trust messaging</li>
+              <li>Space for affiliate disclosures and pixels</li>
+              <li>Mobile-optimized journeys end-to-end</li>
+            </ul>
+          </div>
+          <div className="panel__cta">
+            <p>Ready to integrate your affiliate account?</p>
+            <div className="panel__actions">
+              <button className="btn primary">Link affiliate</button>
+              <button className="btn ghost">Talk to us</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+
+    const Footer = () => (
+      <footer className="footer">
+        <div className="container footer__grid">
+          <div>
+            <div className="brand">
+              <div className="brand__mark">T</div>
+              <span className="brand__name">Tripsygo</span>
+            </div>
+            <p className="lede">Travel discovery with a Booking.com-like experience, optimized for approvals.</p>
+          </div>
+          <div className="footer__links">
+            <div>
+              <h4>Discover</h4>
+              <a href="#stays">Stays</a>
+              <a href="#reviews">Reviews</a>
+              <a href="#map">Map</a>
+            </div>
+            <div>
+              <h4>Company</h4>
+              <a href="#">About</a>
+              <a href="#">Press</a>
+              <a href="#">Careers</a>
+            </div>
+            <div>
+              <h4>Support</h4>
+              <a href="#">Help Center</a>
+              <a href="#">Contact</a>
+              <a href="#">Affiliate</a>
+            </div>
+          </div>
+        </div>
+        <div className="container footer__bar">
+          <span>© {new Date().getFullYear()} Tripsygo. All rights reserved.</span>
+          <span>Inspired by Booking.com for a familiar flow.</span>
+        </div>
+      </footer>
+    );
+
+    const App = () => {
+      const [filters, setFilters] = useState(filtersDefault);
+      const [selected, setSelected] = useState(hotels[0]);
+      const [search, setSearch] = useState(null);
+
+      const filteredHotels = useMemo(() => {
+        return hotels.filter(h => {
+          if (filters.price !== "any" && h.price > Number(filters.price)) return false;
+          if (filters.rating !== "any" && h.rating < Number(filters.rating)) return false;
+          if (filters.type !== "any" && h.type !== filters.type) return false;
+          if (filters.amenities.length && !filters.amenities.every(a => h.amenities.includes(a))) return false;
+          if (search && search.where && !h.city.toLowerCase().includes(search.where.toLowerCase()) && !h.name.toLowerCase().includes(search.where.toLowerCase())) return false;
+          return true;
+        });
+      }, [filters, search]);
+
+      return (
+        <>
+          <header className="topbar">
+            <div className="container topbar__content">
+              <div className="brand">
+                <div className="brand__mark">T</div>
+                <span className="brand__name">Tripsygo</span>
+              </div>
+              <nav className="nav">
+                <a href="#stays">Stays</a>
+                <a href="#map">Map</a>
+                <a href="#reviews">Reviews</a>
+                <a href="#cta">Affiliate</a>
+              </nav>
+              <div className="actions">
+                <button className="btn ghost">Sign in</button>
+                <button className="btn primary">Start booking</button>
+              </div>
+            </div>
+          </header>
+
+          <main>
+            <Hero onSearch={setSearch} />
+
+            <section className="section" id="stays">
+              <div className="container section__header">
+                <div>
+                  <p className="eyebrow">Handpicked stays</p>
+                  <h2>Top picks for your next trip</h2>
+                  <p className="lede">Dynamic listings with familiar filters and pricing clarity.</p>
+                </div>
+              </div>
+              <div className="container listings">
+                <Filters filters={filters} setFilters={setFilters} />
+                <div className="listings__grid">
+                  {filteredHotels.map(h => (
+                    <HotelCard key={h.id} hotel={h} onSelect={setSelected} />
+                  ))}
+                </div>
+              </div>
+              <div className="container detail-wrap">
+                <HotelDetail hotel={selected} onClose={() => setSelected(null)} />
+              </div>
+            </section>
+
+            <MapSection />
+            <Reviews />
+            <CTA id="cta" />
+          </main>
+
+          <Footer />
+        </>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
+
